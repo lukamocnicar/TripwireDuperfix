@@ -2,27 +2,50 @@ name: Build TripwireDupe
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches:
+      - main
+  pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
+    steps:
+      # 1. Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Set up Java 17
+      - name: Set up Java
+        uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 17
 
+      # 3. Download Paper 1.21.11
+      - name: Download Paper 1.21.11
+        run: |
+          mkdir -p libs
+          curl -L -o libs/paper-1.21.11.jar https://api.papermc.io/v2/projects/paper/versions/1.21.11/builds/1/downloads/paper-1.21.11-1.jar
+
+      # 4. Install Paper locally for Maven
+      - name: Install Paper in local Maven
+        run: |
+          mvn install:install-file \
+            -Dfile=libs/paper-1.21.11.jar \
+            -DgroupId=io.papermc.paper \
+            -DartifactId=paper-api \
+            -Dversion=1.21.11 \
+            -Dpackaging=jar
+
+      # 5. Build plugin jar
       - name: Build with Maven
         run: mvn clean package
 
-      - name: Upload JAR
+      # 6. Upload plugin jar
+      - name: Upload Plugin Jar
         uses: actions/upload-artifact@v4
         with:
           name: TripwireDupe
           path: target/TripwireDupe-1.0.jar
+
