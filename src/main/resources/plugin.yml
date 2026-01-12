@@ -1,0 +1,4 @@
+name: TripwireDupe
+version: 1.0
+main: me.tripwiredupe.TripwireDupe
+api-version: 1.21
